@@ -1,138 +1,139 @@
 
 import { z } from 'zod';
 
-// Room schemas
-export const roomSchema = z.object({
+// Enums
+export const statusKamarEnum = z.enum(['Kosong', 'Terisi']);
+export const statusPenyewaEnum = z.enum(['Aktif', 'Keluar']);
+export const metodeBayarEnum = z.enum(['Transfer', 'Tunai']);
+export const statusPembayaranEnum = z.enum(['Lunas', 'Belum']);
+
+export type StatusKamar = z.infer<typeof statusKamarEnum>;
+export type StatusPenyewa = z.infer<typeof statusPenyewaEnum>;
+export type MetodeBayar = z.infer<typeof metodeBayarEnum>;
+export type StatusPembayaran = z.infer<typeof statusPembayaranEnum>;
+
+// Kamar (Room) schemas
+export const kamarSchema = z.object({
   id: z.number(),
-  name: z.string(),
-  description: z.string().nullable(),
-  monthly_rent: z.number(),
-  is_available: z.boolean(),
+  nomor_kamar: z.string(),
+  harga_sewa: z.number().int(),
+  kapasitas: z.number().int(),
+  fasilitas: z.string().nullable(),
+  status: statusKamarEnum,
+  catatan: z.string().nullable(),
   created_at: z.coerce.date()
 });
 
-export type Room = z.infer<typeof roomSchema>;
+export type Kamar = z.infer<typeof kamarSchema>;
 
-export const createRoomInputSchema = z.object({
-  name: z.string().min(1, "Room name is required"),
-  description: z.string().nullable(),
-  monthly_rent: z.number().positive("Monthly rent must be positive"),
-  is_available: z.boolean().default(true)
+export const createKamarInputSchema = z.object({
+  nomor_kamar: z.string().max(10),
+  harga_sewa: z.number().int().positive(),
+  kapasitas: z.number().int().positive(),
+  fasilitas: z.string().nullable(),
+  status: statusKamarEnum,
+  catatan: z.string().nullable()
 });
 
-export type CreateRoomInput = z.infer<typeof createRoomInputSchema>;
+export type CreateKamarInput = z.infer<typeof createKamarInputSchema>;
 
-export const updateRoomInputSchema = z.object({
+export const updateKamarInputSchema = z.object({
   id: z.number(),
-  name: z.string().min(1).optional(),
-  description: z.string().nullable().optional(),
-  monthly_rent: z.number().positive().optional(),
-  is_available: z.boolean().optional()
+  nomor_kamar: z.string().max(10).optional(),
+  harga_sewa: z.number().int().positive().optional(),
+  kapasitas: z.number().int().positive().optional(),
+  fasilitas: z.string().nullable().optional(),
+  status: statusKamarEnum.optional(),
+  catatan: z.string().nullable().optional()
 });
 
-export type UpdateRoomInput = z.infer<typeof updateRoomInputSchema>;
+export type UpdateKamarInput = z.infer<typeof updateKamarInputSchema>;
 
-// Tenant schemas
-export const tenantSchema = z.object({
+// Penyewa (Tenant) schemas
+export const penyewaSchema = z.object({
   id: z.number(),
-  first_name: z.string(),
-  last_name: z.string(),
+  nama_lengkap: z.string(),
+  no_telepon: z.string(),
   email: z.string(),
-  phone: z.string().nullable(),
-  room_id: z.number().nullable(),
-  rental_start_date: z.coerce.date().nullable(),
-  rental_end_date: z.coerce.date().nullable(),
+  nomor_ktp: z.string(),
+  alamat_asal: z.string(),
+  kamar_id: z.number(),
+  tgl_masuk: z.coerce.date(),
+  tgl_keluar: z.coerce.date().nullable(),
+  status: statusPenyewaEnum,
   created_at: z.coerce.date()
 });
 
-export type Tenant = z.infer<typeof tenantSchema>;
+export type Penyewa = z.infer<typeof penyewaSchema>;
 
-export const createTenantInputSchema = z.object({
-  first_name: z.string().min(1, "First name is required"),
-  last_name: z.string().min(1, "Last name is required"),
-  email: z.string().email("Valid email is required"),
-  phone: z.string().nullable(),
-  room_id: z.number().nullable(),
-  rental_start_date: z.coerce.date().nullable(),
-  rental_end_date: z.coerce.date().nullable()
+export const createPenyewaInputSchema = z.object({
+  nama_lengkap: z.string().max(100),
+  no_telepon: z.string().max(15),
+  email: z.string().email().max(100),
+  nomor_ktp: z.string().max(20),
+  alamat_asal: z.string(),
+  kamar_id: z.number(),
+  tgl_masuk: z.coerce.date(),
+  tgl_keluar: z.coerce.date().nullable(),
+  status: statusPenyewaEnum
 });
 
-export type CreateTenantInput = z.infer<typeof createTenantInputSchema>;
+export type CreatePenyewaInput = z.infer<typeof createPenyewaInputSchema>;
 
-export const updateTenantInputSchema = z.object({
+export const updatePenyewaInputSchema = z.object({
   id: z.number(),
-  first_name: z.string().min(1).optional(),
-  last_name: z.string().min(1).optional(),
-  email: z.string().email().optional(),
-  phone: z.string().nullable().optional(),
-  room_id: z.number().nullable().optional(),
-  rental_start_date: z.coerce.date().nullable().optional(),
-  rental_end_date: z.coerce.date().nullable().optional()
+  nama_lengkap: z.string().max(100).optional(),
+  no_telepon: z.string().max(15).optional(),
+  email: z.string().email().max(100).optional(),
+  nomor_ktp: z.string().max(20).optional(),
+  alamat_asal: z.string().optional(),
+  kamar_id: z.number().optional(),
+  tgl_masuk: z.coerce.date().optional(),
+  tgl_keluar: z.coerce.date().nullable().optional(),
+  status: statusPenyewaEnum.optional()
 });
 
-export type UpdateTenantInput = z.infer<typeof updateTenantInputSchema>;
+export type UpdatePenyewaInput = z.infer<typeof updatePenyewaInputSchema>;
 
-// Payment schemas
-export const paymentStatusEnum = z.enum(['pending', 'completed', 'overdue', 'cancelled']);
-export type PaymentStatus = z.infer<typeof paymentStatusEnum>;
-
-export const paymentSchema = z.object({
+// Pembayaran (Payment) schemas
+export const pembayaranSchema = z.object({
   id: z.number(),
-  tenant_id: z.number(),
-  amount: z.number(),
-  payment_month: z.coerce.date(),
-  payment_date: z.coerce.date().nullable(),
-  status: paymentStatusEnum,
-  notes: z.string().nullable(),
+  penyewa_id: z.number(),
+  bulan: z.string(),
+  jumlah: z.number().int(),
+  tanggal_bayar: z.coerce.date(),
+  metode_bayar: metodeBayarEnum,
+  bukti_bayar: z.string().nullable(),
+  status: statusPembayaranEnum,
+  keterangan: z.string().nullable(),
   created_at: z.coerce.date()
 });
 
-export type Payment = z.infer<typeof paymentSchema>;
+export type Pembayaran = z.infer<typeof pembayaranSchema>;
 
-export const createPaymentInputSchema = z.object({
-  tenant_id: z.number(),
-  amount: z.number().positive("Payment amount must be positive"),
-  payment_month: z.coerce.date(),
-  payment_date: z.coerce.date().nullable(),
-  status: paymentStatusEnum.default('pending'),
-  notes: z.string().nullable()
+export const createPembayaranInputSchema = z.object({
+  penyewa_id: z.number(),
+  bulan: z.string().max(20),
+  jumlah: z.number().int().positive(),
+  tanggal_bayar: z.coerce.date(),
+  metode_bayar: metodeBayarEnum,
+  bukti_bayar: z.string().max(255).nullable(),
+  status: statusPembayaranEnum,
+  keterangan: z.string().nullable()
 });
 
-export type CreatePaymentInput = z.infer<typeof createPaymentInputSchema>;
+export type CreatePembayaranInput = z.infer<typeof createPembayaranInputSchema>;
 
-export const updatePaymentInputSchema = z.object({
+export const updatePembayaranInputSchema = z.object({
   id: z.number(),
-  tenant_id: z.number().optional(),
-  amount: z.number().positive().optional(),
-  payment_month: z.coerce.date().optional(),
-  payment_date: z.coerce.date().nullable().optional(),
-  status: paymentStatusEnum.optional(),
-  notes: z.string().nullable().optional()
+  penyewa_id: z.number().optional(),
+  bulan: z.string().max(20).optional(),
+  jumlah: z.number().int().positive().optional(),
+  tanggal_bayar: z.coerce.date().optional(),
+  metode_bayar: metodeBayarEnum.optional(),
+  bukti_bayar: z.string().max(255).nullable().optional(),
+  status: statusPembayaranEnum.optional(),
+  keterangan: z.string().nullable().optional()
 });
 
-export type UpdatePaymentInput = z.infer<typeof updatePaymentInputSchema>;
-
-// Additional query schemas
-export const getRoomByIdInputSchema = z.object({
-  id: z.number()
-});
-
-export type GetRoomByIdInput = z.infer<typeof getRoomByIdInputSchema>;
-
-export const getTenantByIdInputSchema = z.object({
-  id: z.number()
-});
-
-export type GetTenantByIdInput = z.infer<typeof getTenantByIdInputSchema>;
-
-export const getPaymentByIdInputSchema = z.object({
-  id: z.number()
-});
-
-export type GetPaymentByIdInput = z.infer<typeof getPaymentByIdInputSchema>;
-
-export const getPaymentsByTenantInputSchema = z.object({
-  tenant_id: z.number()
-});
-
-export type GetPaymentsByTenantInput = z.infer<typeof getPaymentsByTenantInputSchema>;
+export type UpdatePembayaranInput = z.infer<typeof updatePembayaranInputSchema>;

@@ -1,16 +1,39 @@
 
-import { type GetRoomByIdInput, type Room } from '../schema';
+import { db } from '../db';
+import { kamarTable } from '../db/schema';
+import { eq } from 'drizzle-orm';
 
-export const getRoomById = async (input: GetRoomByIdInput): Promise<Room | null> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is to fetch a specific room by ID from the database.
-    // Should return the room if found, or null if not found.
-    return Promise.resolve({
-        id: input.id,
-        name: "Placeholder Room",
-        description: null,
-        monthly_rent: 1000,
-        is_available: true,
-        created_at: new Date()
-    } as Room);
+// Input type (would normally be imported from schema.ts)
+type GetRoomByIdInput = {
+  id: number;
+};
+
+// Return type matching the kamar table structure
+type Kamar = {
+  id: number;
+  nomor_kamar: string;
+  harga_sewa: number;
+  kapasitas: number;
+  fasilitas: string | null;
+  status: 'Kosong' | 'Terisi';
+  catatan: string | null;
+  created_at: Date;
+};
+
+export const getRoomById = async (input: GetRoomByIdInput): Promise<Kamar | null> => {
+  try {
+    const result = await db.select()
+      .from(kamarTable)
+      .where(eq(kamarTable.id, input.id))
+      .execute();
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error('Failed to get room by ID:', error);
+    throw error;
+  }
 };

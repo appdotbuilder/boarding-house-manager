@@ -3,7 +3,7 @@ import { db } from '../db';
 import { kamarTable } from '../db/schema';
 import { type CreateKamarInput, type Kamar } from '../schema';
 
-export const createRoom = async (input: CreateKamarInput): Promise<Kamar> => {
+export const createKamar = async (input: CreateKamarInput): Promise<Kamar> => {
   try {
     // Insert kamar record
     const result = await db.insert(kamarTable)
@@ -18,9 +18,10 @@ export const createRoom = async (input: CreateKamarInput): Promise<Kamar> => {
       .returning()
       .execute();
 
-    return result[0];
+    const kamar = result[0];
+    return kamar;
   } catch (error) {
-    console.error('Room creation failed:', error);
+    console.error('Kamar creation failed:', error);
     throw error;
   }
 };

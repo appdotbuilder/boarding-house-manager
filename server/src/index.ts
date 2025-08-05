@@ -4,35 +4,31 @@ import { createHTTPServer } from '@trpc/server/adapters/standalone';
 import 'dotenv/config';
 import cors from 'cors';
 import superjson from 'superjson';
+import { z } from 'zod';
 
 // Import schemas
-import {
-  createRoomInputSchema,
-  updateRoomInputSchema,
-  getRoomByIdInputSchema,
-  createTenantInputSchema,
-  updateTenantInputSchema,
-  getTenantByIdInputSchema,
-  createPaymentInputSchema,
-  updatePaymentInputSchema,
-  getPaymentByIdInputSchema,
-  getPaymentsByTenantInputSchema
+import { 
+  createKamarInputSchema, 
+  updateKamarInputSchema,
+  createPenyewaInputSchema,
+  updatePenyewaInputSchema,
+  createPembayaranInputSchema,
+  updatePembayaranInputSchema
 } from './schema';
 
 // Import handlers
-import { createRoom } from './handlers/create_room';
-import { getRooms } from './handlers/get_rooms';
-import { getRoomById } from './handlers/get_room_by_id';
-import { updateRoom } from './handlers/update_room';
-import { createTenant } from './handlers/create_tenant';
-import { getTenants } from './handlers/get_tenants';
-import { getTenantById } from './handlers/get_tenant_by_id';
-import { updateTenant } from './handlers/update_tenant';
-import { createPayment } from './handlers/create_payment';
-import { getPayments } from './handlers/get_payments';
-import { getPaymentById } from './handlers/get_payment_by_id';
-import { getPaymentsByTenant } from './handlers/get_payments_by_tenant';
-import { updatePayment } from './handlers/update_payment';
+import { createKamar } from './handlers/create_kamar';
+import { getKamar } from './handlers/get_kamar';
+import { updateKamar } from './handlers/update_kamar';
+import { deleteKamar } from './handlers/delete_kamar';
+import { createPenyewa } from './handlers/create_penyewa';
+import { getPenyewa } from './handlers/get_penyewa';
+import { updatePenyewa } from './handlers/update_penyewa';
+import { deletePenyewa } from './handlers/delete_penyewa';
+import { createPembayaran } from './handlers/create_pembayaran';
+import { getPembayaran } from './handlers/get_pembayaran';
+import { updatePembayaran } from './handlers/update_pembayaran';
+import { deletePembayaran } from './handlers/delete_pembayaran';
 
 const t = initTRPC.create({
   transformer: superjson,
@@ -45,58 +41,45 @@ const appRouter = router({
   healthcheck: publicProcedure.query(() => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   }),
+  
+  // Kamar (Room) routes
+  createKamar: publicProcedure
+    .input(createKamarInputSchema)
+    .mutation(({ input }) => createKamar(input)),
+  getKamar: publicProcedure
+    .query(() => getKamar()),
+  updateKamar: publicProcedure
+    .input(updateKamarInputSchema)
+    .mutation(({ input }) => updateKamar(input)),
+  deleteKamar: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ input }) => deleteKamar(input)),
 
-  // Room management routes
-  createRoom: publicProcedure
-    .input(createRoomInputSchema)
-    .mutation(({ input }) => createRoom(input)),
+  // Penyewa (Tenant) routes
+  createPenyewa: publicProcedure
+    .input(createPenyewaInputSchema)
+    .mutation(({ input }) => createPenyewa(input)),
+  getPenyewa: publicProcedure
+    .query(() => getPenyewa()),
+  updatePenyewa: publicProcedure
+    .input(updatePenyewaInputSchema)
+    .mutation(({ input }) => updatePenyewa(input)),
+  deletePenyewa: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ input }) => deletePenyewa(input)),
 
-  getRooms: publicProcedure
-    .query(() => getRooms()),
-
-  getRoomById: publicProcedure
-    .input(getRoomByIdInputSchema)
-    .query(({ input }) => getRoomById(input)),
-
-  updateRoom: publicProcedure
-    .input(updateRoomInputSchema)
-    .mutation(({ input }) => updateRoom(input)),
-
-  // Tenant management routes
-  createTenant: publicProcedure
-    .input(createTenantInputSchema)
-    .mutation(({ input }) => createTenant(input)),
-
-  getTenants: publicProcedure
-    .query(() => getTenants()),
-
-  getTenantById: publicProcedure
-    .input(getTenantByIdInputSchema)
-    .query(({ input }) => getTenantById(input)),
-
-  updateTenant: publicProcedure
-    .input(updateTenantInputSchema)
-    .mutation(({ input }) => updateTenant(input)),
-
-  // Payment management routes
-  createPayment: publicProcedure
-    .input(createPaymentInputSchema)
-    .mutation(({ input }) => createPayment(input)),
-
-  getPayments: publicProcedure
-    .query(() => getPayments()),
-
-  getPaymentById: publicProcedure
-    .input(getPaymentByIdInputSchema)
-    .query(({ input }) => getPaymentById(input)),
-
-  getPaymentsByTenant: publicProcedure
-    .input(getPaymentsByTenantInputSchema)
-    .query(({ input }) => getPaymentsByTenant(input)),
-
-  updatePayment: publicProcedure
-    .input(updatePaymentInputSchema)
-    .mutation(({ input }) => updatePayment(input)),
+  // Pembayaran (Payment) routes
+  createPembayaran: publicProcedure
+    .input(createPembayaranInputSchema)
+    .mutation(({ input }) => createPembayaran(input)),
+  getPembayaran: publicProcedure
+    .query(() => getPembayaran()),
+  updatePembayaran: publicProcedure
+    .input(updatePembayaranInputSchema)
+    .mutation(({ input }) => updatePembayaran(input)),
+  deletePembayaran: publicProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ input }) => deletePembayaran(input)),
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,9 +1,19 @@
 
-import { type Room } from '../schema';
+import { db } from '../db';
+import { kamarTable } from '../db/schema';
+import { type Kamar } from '../schema';
 
-export const getRooms = async (): Promise<Room[]> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is to fetch all rooms from the database.
-    // Should return array of all rooms with their current availability status.
-    return [];
+export const getRooms = async (): Promise<Kamar[]> => {
+  try {
+    // Fetch all rooms from the database
+    const result = await db.select()
+      .from(kamarTable)
+      .execute();
+
+    // Return the rooms - no numeric conversion needed as harga_sewa and kapasitas are integers
+    return result;
+  } catch (error) {
+    console.error('Failed to fetch rooms:', error);
+    throw error;
+  }
 };

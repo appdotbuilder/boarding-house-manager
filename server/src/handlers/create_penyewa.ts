@@ -4,16 +4,16 @@ import { penyewaTable, kamarTable } from '../db/schema';
 import { type CreatePenyewaInput, type Penyewa } from '../schema';
 import { eq } from 'drizzle-orm';
 
-export const createTenant = async (input: CreatePenyewaInput): Promise<Penyewa> => {
+export const createPenyewa = async (input: CreatePenyewaInput): Promise<Penyewa> => {
   try {
-    // Verify that the kamar (room) exists
-    const kamar = await db.select()
+    // Verify that the kamar (room) exists before creating penyewa
+    const existingKamar = await db.select()
       .from(kamarTable)
       .where(eq(kamarTable.id, input.kamar_id))
       .execute();
 
-    if (kamar.length === 0) {
-      throw new Error(`Room with id ${input.kamar_id} does not exist`);
+    if (existingKamar.length === 0) {
+      throw new Error(`Kamar with id ${input.kamar_id} does not exist`);
     }
 
     // Convert dates to strings for database storage
@@ -36,7 +36,7 @@ export const createTenant = async (input: CreatePenyewaInput): Promise<Penyewa> 
       .returning()
       .execute();
 
-    // Convert date strings back to Date objects for return type
+    // Convert date strings back to Date objects for return
     const penyewa = result[0];
     return {
       ...penyewa,
@@ -44,7 +44,7 @@ export const createTenant = async (input: CreatePenyewaInput): Promise<Penyewa> 
       tgl_keluar: penyewa.tgl_keluar ? new Date(penyewa.tgl_keluar) : null
     };
   } catch (error) {
-    console.error('Tenant creation failed:', error);
+    console.error('Penyewa creation failed:', error);
     throw error;
   }
 };

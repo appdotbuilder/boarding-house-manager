@@ -1,16 +1,47 @@
 
-import { type UpdateRoomInput, type Room } from '../schema';
+import { db } from '../db';
+import { kamarTable } from '../db/schema';
+import { type UpdateKamarInput, type Kamar } from '../schema';
+import { eq } from 'drizzle-orm';
 
-export const updateRoom = async (input: UpdateRoomInput): Promise<Room> => {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is to update an existing room in the database.
-    // Should validate input, update the room record, and return the updated room.
-    return Promise.resolve({
-        id: input.id,
-        name: input.name || "Updated Room",
-        description: input.description !== undefined ? input.description : null,
-        monthly_rent: input.monthly_rent || 1000,
-        is_available: input.is_available ?? true,
-        created_at: new Date()
-    } as Room);
+export const updateKamar = async (input: UpdateKamarInput): Promise<Kamar> => {
+  try {
+    // Build update object with only provided fields
+    const updateData: Partial<typeof kamarTable.$inferInsert> = {};
+    
+    if (input.nomor_kamar !== undefined) {
+      updateData.nomor_kamar = input.nomor_kamar;
+    }
+    if (input.harga_sewa !== undefined) {
+      updateData.harga_sewa = input.harga_sewa;
+    }
+    if (input.kapasitas !== undefined) {
+      updateData.kapasitas = input.kapasitas;
+    }
+    if (input.fasilitas !== undefined) {
+      updateData.fasilitas = input.fasilitas;
+    }
+    if (input.status !== undefined) {
+      updateData.status = input.status;
+    }
+    if (input.catatan !== undefined) {
+      updateData.catatan = input.catatan;
+    }
+
+    // Update the kamar record
+    const result = await db.update(kamarTable)
+      .set(updateData)
+      .where(eq(kamarTable.id, input.id))
+      .returning()
+      .execute();
+
+    if (result.length === 0) {
+      throw new Error(`Kamar with id ${input.id} not found`);
+    }
+
+    return result[0];
+  } catch (error) {
+    console.error('Kamar update failed:', error);
+    throw error;
+  }
 };
